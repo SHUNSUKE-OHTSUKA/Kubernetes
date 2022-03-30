@@ -1,0 +1,10 @@
+apiVersion: v1
+data:
+  MYSQL_DATABASE: test_db
+  MYSQL_HOST: mysql.database.svc.cluster.local
+  MYSQL_USER: test_user
+  PRE_START_PATH: /root/src/pre_start.sh
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: app
