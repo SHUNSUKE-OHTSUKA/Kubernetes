@@ -18,7 +18,7 @@ spec:
         app: app
     spec:
       containers:
-        - image: tornadetu/app-fastapi:latest # https://hub.docker.com/repository/docker/tornadetu/app-fastapi
+        - image: ghcr.io/shunsuke-ohtsuka/fastapi:main # https://hub.docker.com/repository/docker/tornadetu/app-fastapi
           name: fastapi-app
           envFrom:
             - configMapRef:
