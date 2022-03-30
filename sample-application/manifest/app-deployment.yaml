@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: app
+  name: app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: app
+    spec:
+      containers:
+        - image: tornadetu/app-fastapi:latest # https://hub.docker.com/repository/docker/tornadetu/app-fastapi
+          name: fastapi-app
+          envFrom:
+            - configMapRef:
+                name: app
+            - secretRef:
+                name: app
+          resources: {}
+status: {}
