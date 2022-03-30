@@ -143,5 +143,5 @@ kubectl create service clusterip app --tcp=80 --dry-run=client -o yaml > app-ser
 
     ```
     kubectl delete -f app-deployment.yaml,app-configmap.yaml,app-secret.yaml,app-service.yaml -n app
-    kubectl delete -n app-namespace.yaml
+    kubectl delete -f app-namespace.yaml
     ```
