@@ -61,7 +61,7 @@
 1. Create deployment , configmap , and secret.※
 
     ```
-    kubectl apply -f app-deployment.yaml,app-configmap.yaml,app-secret.yaml,app-service.yaml -n app
+    kubectl apply -f app-deployment.yaml,app-configmap.yaml,app-secret.yaml -n app
     ```
 
 1. Create service.※
