@@ -13,6 +13,6 @@ spec:
     path: sample-application/manifest/mysql
   destination:
     server: https://kubernetes.default.svc
-    namespace: app
+    namespace: database
   syncPolicy:
     automated: {}
