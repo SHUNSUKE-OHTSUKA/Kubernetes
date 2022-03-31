@@ -9,7 +9,7 @@
 1. Create namespace.
 
     ```
-    kubectl apply -f mysql-namespace.yaml
+    kubectl create namespace database
     ```
 
 1. Create deployment.
@@ -55,7 +55,7 @@
 1. Create namespace.
 
     ```
-    kubectl apply -f app-namespace.yaml
+    kubectl create namespace app
     ```
 
 1. Create deployment , configmap , and secret.※
