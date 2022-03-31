@@ -4,12 +4,72 @@
 
 ![Application Image](./docs/Application_Image.JPG)
 
-## Create database(mysql)
+## Create namespace
 
-1. Create namespace.
+```
+kubectl create namespace database
+kubectl create namespace app
+```
+## Launch applocation by CD tool(Argo CD)
+
+### Setup Argo CD
+
+1. Change current directory.
 
     ```
-    kubectl create namespace database
+    cd ./argocd/
+    ```
+
+1. Install Argo CD.
+
+    ```
+    kubectl create namespace argocd
+    kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+    ```
+
+1. Create application.
+
+    ```
+    kubectl apply -f argocd_appproject.yaml,argocd-mysql-application.yaml,argocd-fastapi-application.yaml
+    ```
+
+1. Argo CD operation check.
+
+    1. Setting port-forwarding.
+
+        ```
+        kubectl port-forward svc/argocd-server -n argocd 8081:443
+        ```
+
+    1. Login Using The GUI.
+
+        Access 「localhost:8081」 in your web browser.
+        * Username:admin
+        * Password:<kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}">をbase64でデコードした値  
+        
+        ![Argo CD Login Image](./docs/ArgoCD_login.JPG)
+    
+    1. Open the Applications tab.
+
+        Make sure the status of mysql and fastapi is [Health / Synced]
+        ![Argo CD Application Image](./docs/ArgoCD_applications.JPG)
+
+1. API server operation check.
+
+    Check the operation by referring to the following.  
+    [Launch applocation by manual]-[Create applicaion(fastapi)]-[API server operation check.]
+
+reference
+* https://argo-cd.readthedocs.io/en/stable/getting_started/  
+
+## Launch applocation by manual
+
+### Create database(mysql)
+
+1. Change current directory.
+
+    ```
+    cd ./manifest/mysql/
     ```
 
 1. Create deployment.
@@ -50,12 +110,12 @@
     kubectl apply -f mysql-service.yaml -n database
     ```
 
-## Create applicaion(python)
+### Create applicaion(fastapi)
 
-1. Create namespace.
+1. Change current directory.
 
     ```
-    kubectl create namespace app
+    cd ./manifest/fastapi/
     ```
 
 1. Create deployment , configmap , and secret.※
@@ -70,7 +130,7 @@
     kubectl apply -f app-service.yaml -n app
     ```
 
-4. API server operation check.
+1. API server operation check.
 
     1. Setting port-forwarding.
 
@@ -90,11 +150,11 @@
    
         ![curl -v -X POST -H "Content-Type: application/json" "http://localhost:8080/user?name="Emma"&age=5"](./docs/localhost_8080_post.JPG)
 
-    2. GET users information in your web browser. Confirm that the HTTP200 return code and users information are returned.
+    1. GET users information in your web browser. Confirm that the HTTP200 return code and users information are returned.
 
         ![curl -v -X GET -H "Content-Type: application/json" "http://localhost:8080/users"](./docs/localhost_8080_get.JPG)
 
-    3. PUT to update user information in your terminal. Confirm that the HTTP200 return code and null code are returned.
+    1. PUT to update user information in your terminal. Confirm that the HTTP200 return code and null code are returned.
 
         ```
         curl -v -X PUT -H "Content-Type: application/json" -d @put.json "http://localhost:8080/user"
@@ -106,7 +166,7 @@
         ・・・
         ```
 
-    4. GET to confirm that the user information has been updated. Confirm that the HTTP200 return code and user information are returned.
+    1. GET to confirm that the user information has been updated. Confirm that the HTTP200 return code and user information are returned.
 
         ```
         curl -v -X GET -H "Content-Type: application/json" "http://localhost:8080/users/1"
@@ -117,31 +177,31 @@
         {"name":"Emma","age":3,"id":1}
         ・・・
         ```
-※yaml files were created using the following command.
+    ※yaml files were created using the following command.
 
-```
-# configmap
-kubectl create configmap app --from-env-file=env.txt --dry-run -o yaml > app-configmap.yaml
+    ```
+    # configmap
+    kubectl create configmap app --from-env-file=env.txt --dry-run -o yaml > app-configmap.yaml
 
-# secret
-kubectl create secret generic app --from-literal=MYSQL_PASSWORD=passwd --dry-run=client -o yaml > app-secret.yaml
+    # secret
+    kubectl create secret generic app --from-literal=MYSQL_PASSWORD=passwd --dry-run=client -o yaml > app-secret.yaml
 
-# service
-kubectl create service clusterip app --tcp=80 --dry-run=client -o yaml > app-service.yaml
-```
+    # service
+    kubectl create service clusterip app --tcp=80 --dry-run=client -o yaml > app-service.yaml
+    ```
 
-## Delete Resources
+### Delete Resources
 
 1. Delete mysql resources.
 
     ```
     kubectl delete -f mysql-deployment.yaml,mysql-service.yaml -n database
-    kubectl delete -f mysql-namespace.yaml
+    kubectl delete namespace database
     ```
 
  1. Delete app resources.
 
     ```
     kubectl delete -f app-deployment.yaml,app-configmap.yaml,app-secret.yaml,app-service.yaml -n app
-    kubectl delete -f app-namespace.yaml
+    kubectl delete namespace app
     ```
