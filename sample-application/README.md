@@ -27,10 +27,12 @@ kubectl create namespace app
     kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
     ```
 
-1. Create application.
+### Create database(mysql) and application(fastapi).
+
+1. Create database(mysql) and application(fastapi).
 
     ```
-    kubectl apply -f argocd_appproject.yaml,argocd-mysql-application.yaml,argocd-fastapi-application.yaml
+    kubectl apply -f argocd-appproject.yaml,argocd-mysql-application.yaml,argocd-fastapi-application.yaml
     ```
 
 1. Argo CD operation check.
@@ -61,6 +63,23 @@ kubectl create namespace app
 
 reference
 * https://argo-cd.readthedocs.io/en/stable/getting_started/  
+
+### Delete Resources
+
+1. Delete database and application resources.
+
+    ```
+    kubectl delete -f argocd-appproject.yaml,argocd-mysql-application.yaml,argocd-fastapi-application.yaml
+    kubectl delete namespace database
+    kubectl delete namespace app
+    ```
+
+1. Delete Argo CD resources.
+
+    ```
+    kubectl delete -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+    kubectl delete namespace argocd
+    ```
 
 ## Launch applocation by manual
 
@@ -191,6 +210,13 @@ reference
     ```
 
 ### Delete Resources
+
+1. Delete Argo CD resources.
+
+    ```
+    kubectl delete -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+    kubectl delete namespace argocd
+    ```
 
 1. Delete mysql resources.
 
