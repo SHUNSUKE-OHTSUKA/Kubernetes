@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mysql
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: sample-application
+  source:
+    repoURL: https://github.com/SHUNSUKE-OHTSUKA/kubernetes.git
+    targetRevision: main
+    path: sample-application/manifest/mysql
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: app
+  syncPolicy:
+    automated: {}

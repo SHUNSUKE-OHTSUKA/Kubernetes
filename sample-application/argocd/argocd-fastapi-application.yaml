@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: app
+  name: fastapi
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: https://github.com/SHUNSUKE-OHTSUKA/kubernetes.git
     targetRevision: main
-    path: sample-application/manifest
+    path: sample-application/manifest/fastapi
   destination:
     server: https://kubernetes.default.svc
     namespace: app
