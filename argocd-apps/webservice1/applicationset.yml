@@ -6,7 +6,7 @@ metadata:
 spec:
   generators:
   - git:
-      repoURL: https://github.com/SHUNSUKE-OHTSUKA/argocd-sample.git
+      repoURL: https://github.com/SHUNSUKE-OHTSUKA/k8s-app.git
       revision: HEAD
       directories:
       - path: webservice1/*
@@ -16,7 +16,7 @@ spec:
     spec:
       project: sample-pj
       source:
-        repoURL: https://github.com/SHUNSUKE-OHTSUKA/argocd-sample.git
+        repoURL: https://github.com/SHUNSUKE-OHTSUKA/k8s-app.git
         targetRevision: HEAD
         path: '{{path}}'
       destination:
