@@ -45,5 +45,5 @@ argocd account update-password --account sync --current-password $ADMIN_PASS --n
 ## Project/Application作成
 
 ```
-kubectl apply -f argocd-apps/
+kubectl apply -f argocd-apps/webserver/
 ```

@@ -9,7 +9,7 @@ spec:
       repoURL: https://github.com/SHUNSUKE-OHTSUKA/argocd-sample.git
       revision: HEAD
       directories:
-      - path: webserver/*
+      - path: webservice1/*
   template:
     metadata:
       name: '{{path.basename}}'
