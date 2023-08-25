@@ -9,4 +9,4 @@ metadata:
 data:
   accounts.dev: login,apikey
   accounts.ope: login,apikey
-  accounts.sync: login,apikey
+  accounts.sync: apikey

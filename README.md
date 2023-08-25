@@ -32,16 +32,18 @@ http://localhost:8080にWebブラウザでログインする。
 * Username: admin
 * Password: <echo $ADMIN_PASS>
 
-## ユーザ作成/RBAC設定/AppProjectの作成
+## ユーザ作成/RBAC設定/パスワード修正
 
 ```
-kubectl apply -n argocd -f argocd
-```
-
-### ユーザのパスワード修正
-```
+kubectl apply -n argocd -f argocd-manage
 argocd login --insecure localhost:8080 --username admin --password $ADMIN_PASS
 argocd account update-password --account dev --current-password $ADMIN_PASS --new-password $ADMIN_PASS
 argocd account update-password --account ope --current-password $ADMIN_PASS --new-password $ADMIN_PASS
 argocd account update-password --account sync --current-password $ADMIN_PASS --new-password $ADMIN_PASS
+```
+
+## Project/Application作成
+
+```
+kubectl apply -f argocd-apps/
 ```

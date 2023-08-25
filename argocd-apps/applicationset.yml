@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: sample-as
+  namespace: argocd
+spec:
+  generators:
+  - git:
+      repoURL: https://github.com/SHUNSUKE-OHTSUKA/argocd-sample.git
+      revision: HEAD
+      directories:
+      - path: webserver/*
+  template:
+    metadata:
+      name: '{{path.basename}}'
+    spec:
+      project: sample-pj
+      source:
+        repoURL: https://github.com/SHUNSUKE-OHTSUKA/argocd-sample.git
+        targetRevision: HEAD
+        path: '{{path}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{path.basename}}'
+      syncPolicy:
+        automated:
+          prune: true
+        syncOptions:
+        - CreateNamespace=true

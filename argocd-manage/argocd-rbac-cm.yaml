@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-rbac-cm
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd-rbac-cm
+    app.kubernetes.io/part-of: argocd
+data:
+  # policy.default: role:readonly
+  policy.csv: |
+    p, role:org-power, applications, get, */*, allow
+    p, role:org-power, applications, create, */*, allow
+    p, role:org-power, applications, update, */*, allow
+    p, role:org-power, applications, delete, */*, allow
+    p, role:org-power, applications, sync, */*, allow
+    p, role:org-power, applications, override, */*, allow
+    p, role:org-power, applications, action/*, */*, allow
+    p, role:org-power, applicationsets, get, */*, allow
+    p, role:org-power, applicationsets, create, */*, allow
+    p, role:org-power, applicationsets, update, */*, allow
+    p, role:org-power, applicationsets, delete, */*, allow
+    p, role:org-power, certificates, get, *, allow
+    p, role:org-power, certificates, create, *, allow
+    p, role:org-power, certificates, update, *, allow
+    p, role:org-power, certificates, delete, *, allow
+    p, role:org-power, clusters, get, *, allow
+    p, role:org-power, clusters, create, *, allow
+    p, role:org-power, clusters, update, *, allow
+    p, role:org-power, clusters, delete, *, allow
+    p, role:org-power, repositories, get, *, allow
+    p, role:org-power, repositories, create, *, allow
+    p, role:org-power, repositories, update, *, allow
+    p, role:org-power, repositories, delete, *, allow
+    p, role:org-power, projects, get, *, allow
+    p, role:org-power, projects, create, *, allow
+    p, role:org-power, projects, update, *, allow
+    p, role:org-power, projects, delete, *, allow
+    p, role:org-power, accounts, get, *, allow
+    p, role:org-power, gpgkeys, get, *, allow
+    p, role:org-power, gpgkeys, create, *, allow
+    p, role:org-power, gpgkeys, delete, *, allow
+    p, role:org-power, exec, create, */*, allow
+    p, role:org-power, logs, get, */*, allow
+
+    p, role:org-ope, applications, get, */*, allow
+    p, role:org-ope, applications, update, */*, allow
+    p, role:org-ope, applications, sync, */*, allow
+    p, role:org-ope, applications, override, */*, allow
+    p, role:org-ope, applications, action/*, */*, allow
+    p, role:org-ope, certificates, update, *, allow
+    p, role:org-ope, exec, create, */*, allow
+    p, role:org-ope, logs, get, */*, allow
+    p, role:org-ope, accounts, *, *, allow
+
+    p, role:org-sync, applications, get, */*, allow
+    p, role:org-sync, applications, sync, */*, allow
+    p, role:org-sync, applications, action/*, */*, allow
+
+    g, admin, role:admin
+    g, dev, role:org-power
+    g, ope, role:org-ope
+    g, sync, role:org-sync
