@@ -6,7 +6,7 @@ metadata:
 spec:
   generators:
   - git:
-      repoURL: https://github.com/SHUNSUKE-OHTSUKA/k8s-app.git
+      repoURL: https://github.com/SHUNSUKE-OHTSUKA/k8s-apps.git
       revision: HEAD
       directories:
       - path: webservice1/*
@@ -16,7 +16,7 @@ spec:
     spec:
       project: sample-pj
       source:
-        repoURL: https://github.com/SHUNSUKE-OHTSUKA/k8s-app.git
+        repoURL: https://github.com/SHUNSUKE-OHTSUKA/k8s-apps.git
         targetRevision: HEAD
         path: '{{path}}'
       destination:
