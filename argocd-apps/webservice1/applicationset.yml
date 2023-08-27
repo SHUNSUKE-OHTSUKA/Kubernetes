@@ -14,9 +14,9 @@ spec:
     metadata:
       name: '{{path.basename}}'
       labels:
-        repoURL: https://github.com/SHUNSUKE-OHTSUKA/k8s-apps.git
-        path: '{{path}}'
-        servicename: webservice1
+        source-org: SHUNSUKE-OHTSUKA
+        source-repo: k8s-apps
+        source-branch: HEAD
     spec:
       project: sample-pj
       source:
