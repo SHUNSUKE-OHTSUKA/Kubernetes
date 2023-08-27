@@ -13,6 +13,10 @@ spec:
   template:
     metadata:
       name: '{{path.basename}}'
+      labels:
+        repoURL: https://github.com/SHUNSUKE-OHTSUKA/k8s-apps.git
+        path: '{{path}}'
+        servicename: webservice1
     spec:
       project: sample-pj
       source:
