@@ -23,32 +23,46 @@ pre-commit install
 - ワイルドカードの名前解決設定 ( *.minikube.local <-> $(minikube ip) )
 - Webブラウザ環境 ( Google Chrome )
 
-## ArgoCDのセットアップ
+## セットアップ
 
-### ArgoCDのk8sリソース作成
+### Ingressコントローラー 有効化
 
 ```
-kubectl apply -f ./init
+minikube addons enable ingress
+```
+
+### ArgoCD k8sリソース作成
+
+```
+kubectl apply -f ./k8s-setup/namespace.yml
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-ADMIN_PASS=$(kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d); echo $ADMIN_PASS
+ARGOCD_ADMIN_PASS=$(kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d); echo $ARGOCD_ADMIN_PASS
+```
+
+### EKF k8sリソース作成
+
+```
+kubectl apply -n kube-logging -f efk
+KIBANA_PASS=$(kubectl get secret kibana-password -n kube-logging -o jsonpath="{.data.password}" | base64 -d); echo $KIBANA_PASS
 ```
 
 ### 自己証明書作成/SSL化
 
 ```
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 -out ./k8s-setup/k8s.crt -keyout ./k8s-setup/k8s.key -subj "/CN=*.minikube.local/O=org"
+# openssl req -x509 -nodes -days 365 -newkey rsa:2048 -out ./k8s-setup/k8s.crt -keyout ./k8s-setup/k8s.key -subj "/CN=*.minikube.local/O=org"
 kubectl create secret tls argocd-cert-secret --key ./k8s-setup/k8s.key --cert ./k8s-setup/k8s.crt --dry-run=client -n argocd -o yaml > ./k8s-setup/argocd-cert-secret.yaml
+kubectl create secret tls kibana-cert-secret --key ./k8s-setup/k8s.key --cert ./k8s-setup/k8s.crt --dry-run=client -n kube-logging -o yaml > ./k8s-setup/kibana-cert-secret.yaml
 kubectl apply -f ./k8s-setup
 ```
 
-### ユーザ作成/RBAC設定/パスワード修正
+### ArgoCD ユーザ作成/RBAC設定/パスワード修正
 
 ```
 kubectl apply -n argocd -f argocd-manage
-argocd login argocd.minikube.local:443 --grpc-web --username admin --password $ADMIN_PASS
-argocd account update-password --grpc-web --account dev --current-password $ADMIN_PASS --new-password $ADMIN_PASS
-argocd account update-password --grpc-web --account ope --current-password $ADMIN_PASS --new-password $ADMIN_PASS
-argocd account update-password --grpc-web --account sync --current-password $ADMIN_PASS --new-password $ADMIN_PASS
+argocd login argocd.minikube.local:443 --grpc-web --username admin --password $ARGOCD_ADMIN_PASS
+argocd account update-password --grpc-web --account dev --current-password $ARGOCD_ADMIN_PASS --new-password $ARGOCD_ADMIN_PASS
+argocd account update-password --grpc-web --account ope --current-password $ARGOCD_ADMIN_PASS --new-password $ARGOCD_ADMIN_PASS
+argocd account update-password --grpc-web --account sync --current-password $ARGOCD_ADMIN_PASS --new-password $ARGOCD_ADMIN_PASS
 ```
 
 ### ログイン確認
@@ -57,7 +71,11 @@ WebブラウザにてArgoCDにログインする。
 
 * URL: https://argocd.minikube.local/
 * Username: admin/dev/ope
-* Password: <echo $ADMIN_PASS>
+* Password: <echo $ARGOCD_ADMIN_PASS>
+
+* URL: https://kibana.minikube.local/
+* Username: elastic
+* Password: <echo $KIBANA_PASS>
 
 ## ArgoCDでGitOps
 

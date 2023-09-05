@@ -1,3 +1,3 @@
 *.key
 *.crt
-k8s-setup/argocd-cert-secret.yaml
+k8s-setup/*-cert-secret.yaml
