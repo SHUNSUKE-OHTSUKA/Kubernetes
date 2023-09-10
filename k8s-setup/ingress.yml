@@ -29,9 +29,9 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: kibana-ingress
-  namespace: kube-logging
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
 spec:
   ingressClassName: nginx
   rules:
@@ -42,7 +42,7 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: kibana
+            name: quickstart-kb-http
             port:
               number: 5601
   tls:

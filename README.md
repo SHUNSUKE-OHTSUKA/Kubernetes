@@ -4,10 +4,10 @@
 
 k8s on minikube on Docker on Ubunts というわかりにくい環境となっています。
 
-- OS : Ubuntu 22.04.3 LTS on WSL2(Windows 11 Home)
-- Docker : v24.0.5
+- OS : Ubuntu 22.04.2 LTS on WSL2(Windows 11 Home)
+- Docker : v24.0.6
 - minikube : v1.31.1
-- Kubernetes : v1.27.3
+- Kubernetes : v1.27.4
 - pip : 22.0.2
 - ArgoCD CLI : v2.8.0
 
@@ -21,9 +21,15 @@ pre-commit install
 その他、以下を前提とします。
 
 - ワイルドカードの名前解決設定 ( *.minikube.local <-> $(minikube ip) )
-- Webブラウザ環境 ( Google Chrome )
+- Webブラウザ環境 ( Google Chrome, Mozilla Firefox )
 
 ## セットアップ
+
+### minikubeクラスター作成
+
+```
+minikube start --driver=docker --memory=12288 --cpus=4
+```
 
 ### Ingressコントローラー 有効化
 
@@ -39,19 +45,28 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/st
 ARGOCD_ADMIN_PASS=$(kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d); echo $ARGOCD_ADMIN_PASS
 ```
 
-### EKF k8sリソース作成
+## ECK k8sリソース作成
 
 ```
-kubectl apply -n kube-logging -f efk
-KIBANA_PASS=$(kubectl get secret kibana-password -n kube-logging -o jsonpath="{.data.password}" | base64 -d); echo $KIBANA_PASS
+# ECK
+## https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-deploy-eck.html
+kubectl create -f https://download.elastic.co/downloads/eck/2.9.0/crds.yaml
+kubectl apply -f https://download.elastic.co/downloads/eck/2.9.0/operator.yaml
+
+# Elasticsearch,Kibana
+kubectl apply -f eck/
+KIBANA_PASS=$(kubectl get secret quickstart-es-elastic-user -o=jsonpath='{.data.elastic}' | base64 --decode); echo $KIBANA_PASS
 ```
 
 ### 自己証明書作成/SSL化
 
 ```
-# openssl req -x509 -nodes -days 365 -newkey rsa:2048 -out ./k8s-setup/k8s.crt -keyout ./k8s-setup/k8s.key -subj "/CN=*.minikube.local/O=org"
+# openssl genpkey -out ./k8s-setup/k8s.key -algorithm RSA -pkeyopt rsa_keygen_bits:2048
+# openssl req -new -key ./k8s-setup/k8s.key -out ./k8s-setup/k8s.csr -subj "/CN=*.minikube.local"
+# openssl x509 -in ./k8s-setup/k8s.csr -out ./k8s-setup/k8s.crt -req -signkey ./k8s-setup/k8s.key -days 365 -subj "/CN=*.minikube.local" -copy_extensions copy -extfile ./k8s-setup/subjectnames.txt
+
 kubectl create secret tls argocd-cert-secret --key ./k8s-setup/k8s.key --cert ./k8s-setup/k8s.crt --dry-run=client -n argocd -o yaml > ./k8s-setup/argocd-cert-secret.yaml
-kubectl create secret tls kibana-cert-secret --key ./k8s-setup/k8s.key --cert ./k8s-setup/k8s.crt --dry-run=client -n kube-logging -o yaml > ./k8s-setup/kibana-cert-secret.yaml
+kubectl create secret tls kibana-cert-secret --key ./k8s-setup/k8s.key --cert ./k8s-setup/k8s.crt --dry-run=client -o yaml > ./k8s-setup/kibana-cert-secret.yaml
 kubectl apply -f ./k8s-setup
 ```
 
@@ -67,17 +82,19 @@ argocd account update-password --grpc-web --account sync --current-password $ARG
 
 ### ログイン確認
 
-WebブラウザにてArgoCDにログインする。
+WebブラウザにてArgoCD,Kibanaにログインする。
 
-* URL: https://argocd.minikube.local/
-* Username: admin/dev/ope
-* Password: <echo $ARGOCD_ADMIN_PASS>
+* ArgoCD
+    * URL: https://argocd.minikube.local/
+    * Username: admin/dev/ope
+    * Password: <echo $ARGOCD_ADMIN_PASS>
 
-* URL: https://kibana.minikube.local/
-* Username: elastic
-* Password: <echo $KIBANA_PASS>
+* Kibana
+    * URL: https://kibana.minikube.local/
+    * Username: elastic
+    * Password: <echo $KIBANA_PASS>
 
-## ArgoCDでGitOps
+## GitOps
 
 ### Project/Application作成
 
