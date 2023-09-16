@@ -2,3 +2,9 @@ kind: Namespace
 apiVersion: v1
 metadata:
   name: argocd
+
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: elastic-monitoring

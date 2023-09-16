@@ -42,7 +42,6 @@ minikube addons enable ingress
 ```
 kubectl apply -f ./k8s-setup/namespace.yml
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-ARGOCD_ADMIN_PASS=$(kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d); echo $ARGOCD_ADMIN_PASS
 ```
 
 ## ECK k8sリソース作成
@@ -53,9 +52,9 @@ ARGOCD_ADMIN_PASS=$(kubectl get secret argocd-initial-admin-secret -n argocd -o 
 kubectl create -f https://download.elastic.co/downloads/eck/2.9.0/crds.yaml
 kubectl apply -f https://download.elastic.co/downloads/eck/2.9.0/operator.yaml
 
-# Elasticsearch,Kibana
+# Elasticsearch,Kibana,Filebeat,Metricbeat
 kubectl apply -f eck/
-KIBANA_PASS=$(kubectl get secret quickstart-es-elastic-user -o=jsonpath='{.data.elastic}' | base64 --decode); echo $KIBANA_PASS
+KIBANA_PASS=$(kubectl get secret monitoring-elasticsearch-es-elastic-user -n elastic-monitoring -o=jsonpath='{.data.elastic}' | base64 --decode); echo $KIBANA_PASS
 ```
 
 ### 自己証明書作成/SSL化
@@ -66,7 +65,7 @@ KIBANA_PASS=$(kubectl get secret quickstart-es-elastic-user -o=jsonpath='{.data.
 # openssl x509 -in ./k8s-setup/k8s.csr -out ./k8s-setup/k8s.crt -req -signkey ./k8s-setup/k8s.key -days 365 -subj "/CN=*.minikube.local" -copy_extensions copy -extfile ./k8s-setup/subjectnames.txt
 
 kubectl create secret tls argocd-cert-secret --key ./k8s-setup/k8s.key --cert ./k8s-setup/k8s.crt --dry-run=client -n argocd -o yaml > ./k8s-setup/argocd-cert-secret.yaml
-kubectl create secret tls kibana-cert-secret --key ./k8s-setup/k8s.key --cert ./k8s-setup/k8s.crt --dry-run=client -o yaml > ./k8s-setup/kibana-cert-secret.yaml
+kubectl create secret tls kibana-cert-secret --key ./k8s-setup/k8s.key --cert ./k8s-setup/k8s.crt --dry-run=client -n elastic-monitoring -o yaml > ./k8s-setup/kibana-cert-secret.yaml
 kubectl apply -f ./k8s-setup
 ```
 
@@ -74,6 +73,7 @@ kubectl apply -f ./k8s-setup
 
 ```
 kubectl apply -n argocd -f argocd-manage
+ARGOCD_ADMIN_PASS=$(kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d); echo $ARGOCD_ADMIN_PASS
 argocd login argocd.minikube.local:443 --grpc-web --username admin --password $ARGOCD_ADMIN_PASS
 argocd account update-password --grpc-web --account dev --current-password $ARGOCD_ADMIN_PASS --new-password $ARGOCD_ADMIN_PASS
 argocd account update-password --grpc-web --account ope --current-password $ARGOCD_ADMIN_PASS --new-password $ARGOCD_ADMIN_PASS
