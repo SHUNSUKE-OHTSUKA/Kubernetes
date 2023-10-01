@@ -1,0 +1,7 @@
+bases:
+  - ../../bases
+namespace: elastic-monitoring
+namePrefix: elastic-apm-
+patchesStrategicMerge:
+- certificate.yaml
+- issure.yaml

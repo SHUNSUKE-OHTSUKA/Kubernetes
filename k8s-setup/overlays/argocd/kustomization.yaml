@@ -1,0 +1,7 @@
+bases:
+  - ../../bases
+namespace: argocd
+namePrefix: argocd-
+patchesStrategicMerge:
+- certificate.yaml
+- issure.yaml

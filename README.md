@@ -10,6 +10,7 @@ k8s on minikube on Docker on Ubunts というわかりにくい環境となっ�
 - Kubernetes : v1.27.4
 - pip : 22.0.2
 - ArgoCD CLI : v2.8.0
+- kustomize : v5.1.1
 
 ## 開発環境構築
 
@@ -52,22 +53,32 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/st
 kubectl create -f https://download.elastic.co/downloads/eck/2.9.0/crds.yaml
 kubectl apply -f https://download.elastic.co/downloads/eck/2.9.0/operator.yaml
 
-# Elasticsearch,Kibana,Filebeat,Metricbeat
+# Elasticsearch,Kibana,Filebeat,Metricbeat,ElasticAPM
 kubectl apply -f eck/
 KIBANA_PASS=$(kubectl get secret monitoring-elasticsearch-es-elastic-user -n elastic-monitoring -o=jsonpath='{.data.elastic}' | base64 --decode); echo $KIBANA_PASS
+APM_TOKEN=$( kubectl get secret/apm-server-apm-token -n elastic-monitoring -o go-template='{{index .data "secret-token" | base64decode}}' ); echo $APM_TOKEN
 ```
 
-### 自己証明書作成/SSL化
+### k8s cert-manager導入,Server証明書作成,Ingress SSL/TLS化
 
 ```
-# openssl genpkey -out ./k8s-setup/k8s.key -algorithm RSA -pkeyopt rsa_keygen_bits:2048
-# openssl req -new -key ./k8s-setup/k8s.key -out ./k8s-setup/k8s.csr -subj "/CN=*.minikube.local"
-# openssl x509 -in ./k8s-setup/k8s.csr -out ./k8s-setup/k8s.crt -req -signkey ./k8s-setup/k8s.key -days 365 -subj "/CN=*.minikube.local" -copy_extensions copy -extfile ./k8s-setup/subjectnames.txt
+# kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.0/cert-manager.yaml
+kubectl apply -f ./k8s-setup/ca.yaml
+kustomize build ./k8s-setup/overlays/argocd/ | kubectl apply -f -
+kustomize build ./k8s-setup/overlays/elastic-apm/ | kubectl apply -f -
+kustomize build ./k8s-setup/overlays/kibana/ | kubectl apply -f -
 
-kubectl create secret tls argocd-cert-secret --key ./k8s-setup/k8s.key --cert ./k8s-setup/k8s.crt --dry-run=client -n argocd -o yaml > ./k8s-setup/argocd-cert-secret.yaml
-kubectl create secret tls kibana-cert-secret --key ./k8s-setup/k8s.key --cert ./k8s-setup/k8s.crt --dry-run=client -n elastic-monitoring -o yaml > ./k8s-setup/kibana-cert-secret.yaml
-kubectl apply -f ./k8s-setup
+kubectl get secrets argocd-cert-secret -n argocd -o jsonpath='{.data.ca\.crt}' | base64 -d > ./k8s-setup/argocd-ca.crt
+kubectl get secrets elastic-apm-cert-secret -n elastic-monitoring -o jsonpath='{.data.ca\.crt}' | base64 -d > ./k8s-setup/elastic-apm-ca.crt
+kubectl get secrets elastic-apm-cert-secret -n elastic-monitoring -o jsonpath='{.data.tls\.crt}' | base64 -d > ./k8s-setup/elastic-apm-tls.crt
+kubectl get secrets kibana-cert-secret -n elastic-monitoring -o jsonpath='{.data.ca\.crt}' | base64 -d > ./k8s-setup/kibana-ca.crt
+
+cp -p  ./k8s-setup/elastic-apm-ca.crt  ./k8s-setup/elastic-apm-ca.pem
+kubectl apply -f ./k8s-setup/ingress.yml
 ```
+
+* Webブラウザに *-ca.crt を登録する。
+* ElasticAPMを利用する場合はelastic-apm-ca.crt、elastic-apm-tls.crtをアプリケーションから参照する。
 
 ### ArgoCD ユーザ作成/RBAC設定/パスワード修正
 
@@ -101,3 +112,16 @@ WebブラウザにてArgoCD,Kibanaにログインする。
 ```
 kubectl apply -f argocd-apps/webservice1/
 ```
+
+## Monitoring
+
+* APM(Elastic APM)
+    * URL :
+        * https://www.elastic.co/guide/en/apm/guide/current/apm-quick-start.html#add-apm-integration-agents/
+        * https://www.elastic.co/guide/en/apm/agent/go/current/configuration.html
+    * 環境変数
+        * ELASTIC_APM_SERVER_URL : https://elastic-apm.minikube.local/
+        * ELASTIC_APM_SECRET_TOKEN : <echo $APM_TOKEN>
+        * ELASTIC_APM_SERVER_CERT : elastic-apm-tls.crt のパス
+        * ELASTIC_APM_SERVER_CA_CERT_FILE : elastic-apm-ca.crt のパス
+        * ELASTIC_APM_VERIFY_SERVER_CERT : true

@@ -1,0 +1,19 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: selfsigned-ca
+spec:
+  commonName: argocd.minikube.local
+  secretName: argocd-ca-cert-secret
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: server
+spec:
+  commonName: argocd.minikube.local
+  dnsNames:
+  - argocd.minikube.local
+  secretName: argocd-cert-secret
+  issuerRef:
+    name: argocd-ca-issuer

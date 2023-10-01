@@ -1,0 +1,19 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: selfsigned-ca
+spec:
+  commonName: kibana.minikube.local
+  secretName: kibana-ca-cert-secret
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: server
+spec:
+  commonName: kibana.minikube.local
+  dnsNames:
+  - kibana.minikube.local
+  secretName: kibana-cert-secret
+  issuerRef:
+    name: kibana-ca-issuer

@@ -1,0 +1,7 @@
+bases:
+  - ../../bases
+namespace: elastic-monitoring
+namePrefix: kibana-
+patchesStrategicMerge:
+- certificate.yaml
+- issure.yaml

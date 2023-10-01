@@ -1,0 +1,19 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: selfsigned-ca
+spec:
+  commonName: elastic-apm.minikube.local
+  secretName: elastic-apm-ca-cert-secret
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: server
+spec:
+  commonName: elastic-apm.minikube.local
+  dnsNames:
+  - elastic-apm.minikube.local
+  secretName: elastic-apm-cert-secret
+  issuerRef:
+    name: elastic-apm-ca-issuer
