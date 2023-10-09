@@ -1,14 +1,14 @@
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
-  name: sample-pj
+  name: appproject-webservice1
   namespace: argocd
 spec:
   sourceRepos:
-    - "*"
+    - https://github.com/SHUNSUKE-OHTSUKA/k8s-apps.git
   destinations:
-    - namespace: '*'
-      server: '*'
+    - namespace: webservice1
+      server: https://kubernetes.default.svc
   clusterResourceWhitelist:
     - group: "*"
       kind: "*"

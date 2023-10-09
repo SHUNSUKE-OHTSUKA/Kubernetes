@@ -11,6 +11,7 @@ k8s on minikube on Docker on Ubunts というわかりにくい環境となっ�
 - pip : 22.0.2
 - ArgoCD CLI : v2.8.0
 - kustomize : v5.1.1
+- Istio : 1.19.1
 
 ## 開発環境構築
 
@@ -67,13 +68,14 @@ kubectl apply -f ./k8s-setup/ca.yaml
 kustomize build ./k8s-setup/overlays/argocd/ | kubectl apply -f -
 kustomize build ./k8s-setup/overlays/elastic-apm/ | kubectl apply -f -
 kustomize build ./k8s-setup/overlays/kibana/ | kubectl apply -f -
+kustomize build ./k8s-setup/overlays/Kiali/ | kubectl apply -f -
 
 kubectl get secrets argocd-cert-secret -n argocd -o jsonpath='{.data.ca\.crt}' | base64 -d > ./k8s-setup/argocd-ca.crt
 kubectl get secrets elastic-apm-cert-secret -n elastic-monitoring -o jsonpath='{.data.ca\.crt}' | base64 -d > ./k8s-setup/elastic-apm-ca.crt
 kubectl get secrets elastic-apm-cert-secret -n elastic-monitoring -o jsonpath='{.data.tls\.crt}' | base64 -d > ./k8s-setup/elastic-apm-tls.crt
 kubectl get secrets kibana-cert-secret -n elastic-monitoring -o jsonpath='{.data.ca\.crt}' | base64 -d > ./k8s-setup/kibana-ca.crt
+kubectl get secrets kiali-cert-secret -n istio-system -o jsonpath='{.data.ca\.crt}' | base64 -d > ./k8s-setup/kiali-ca.crt
 
-cp -p  ./k8s-setup/elastic-apm-ca.crt  ./k8s-setup/elastic-apm-ca.pem
 kubectl apply -f ./k8s-setup/ingress.yml
 ```
 
@@ -125,3 +127,24 @@ kubectl apply -f argocd-apps/webservice1/
         * ELASTIC_APM_SERVER_CERT : elastic-apm-tls.crt のパス
         * ELASTIC_APM_SERVER_CA_CERT_FILE : elastic-apm-ca.crt のパス
         * ELASTIC_APM_VERIFY_SERVER_CERT : true
+
+## ServiceMesh
+
+### Istio インストール
+
+'''
+cd ~
+curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.19.1 TARGET_ARCH=x86_64 sh -
+sudo ln -s $PWD/istio-1.19.1/bin/istioctl /usr/local/bin/istioctl
+istioctl install --set profile=demo -y
+kubectl apply -f ./istio-1.19.1/samples/addons
+'''
+
+### Kialiインストール
+
+'''
+
+kubectl rollout status deployment/kiali -n istio-system
+'''
+
+```

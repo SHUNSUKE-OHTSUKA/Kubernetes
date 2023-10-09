@@ -1,0 +1,7 @@
+bases:
+  - ../../bases
+namespace: istio-system
+namePrefix: kiali-
+patchesStrategicMerge:
+- certificate.yaml
+- issure.yaml

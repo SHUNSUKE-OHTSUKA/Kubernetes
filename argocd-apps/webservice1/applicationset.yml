@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: sample-as
+  name: applicationset-webservice1
   namespace: argocd
 spec:
   generators:
@@ -9,7 +9,7 @@ spec:
       repoURL: https://github.com/SHUNSUKE-OHTSUKA/k8s-apps.git
       revision: HEAD
       directories:
-      - path: webservice1/*
+      - path: webservice1/nginx/overlays/*
   template:
     metadata:
       name: '{{path.basename}}'
@@ -18,18 +18,18 @@ spec:
         source-repo: k8s-apps
         source-branch: HEAD
     spec:
-      project: sample-pj
+      project: appproject-webservice1
       source:
         repoURL: https://github.com/SHUNSUKE-OHTSUKA/k8s-apps.git
         targetRevision: HEAD
         path: '{{path}}'
       destination:
         server: https://kubernetes.default.svc
-        namespace: '{{path.basename}}'
+        namespace: webservice1
       syncPolicy:
         automated:
           prune: true
+          selfHeal: true
         syncOptions:
-        - CreateNamespace=true
         - PrunePropagationPolicy=background
         - ApplyOutOfSyncOnly=true
