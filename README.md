@@ -4,7 +4,7 @@
 
 k8s on minikube on Docker on Ubunts というわかりにくい環境となっています。
 
-- OS : Ubuntu 22.04.2 LTS on WSL2(Windows 11 Home)
+- OS : Ubuntu 22.04.2 LTS on WSL2(Windows 11 Home,CPU 4,Nemory 8GB)
 - Docker : v24.0.6
 - minikube : v1.31.1
 - Kubernetes : v1.27.4
@@ -22,15 +22,27 @@ pre-commit install
 
 その他、以下を前提とします。
 
-- ワイルドカードの名前解決設定 ( *.minikube.local <-> $(minikube ip) )
 - Webブラウザ環境 ( Google Chrome, Mozilla Firefox )
 
 ## セットアップ
 
 ### minikubeクラスター作成
 
+memory,cpusは自身のローカルPC(wsl2)と相談して調整してください
+
 ```
-minikube start --driver=docker --memory=12288 --cpus=4
+minikube start --driver=docker --memory=6656mb --cpus=3
+```
+
+minikubeの名前解決設定 ( *.minikube.local <-> $(minikubeのIPアドレス) )も追加します
+
+```
+※dnsmaskを利用する場合は以下の設定ファイルを作成する
+cat <<EOF > /etc/dnsmasq.d/minikube.conf
+domain-needed
+domain = local
+address=/.minikube.local/$(minikube ip)
+EOF
 ```
 
 ### Ingressコントローラー 有効化
@@ -42,6 +54,7 @@ minikube addons enable ingress
 ### ArgoCD k8sリソース作成
 
 ```
+cd ~/kubernetes
 kubectl apply -f ./k8s-setup/namespace.yml
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
@@ -63,7 +76,7 @@ APM_TOKEN=$( kubectl get secret/apm-server-apm-token -n elastic-monitoring -o go
 ### k8s cert-manager導入,Server証明書作成,Ingress SSL/TLS化
 
 ```
-# kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.0/cert-manager.yaml
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.0/cert-manager.yaml
 kubectl apply -f ./k8s-setup/ca.yaml
 kustomize build ./k8s-setup/overlays/argocd/ | kubectl apply -f -
 kustomize build ./k8s-setup/overlays/elastic-apm/ | kubectl apply -f -
@@ -134,17 +147,21 @@ kubectl apply -f argocd-apps/webservice1/
 
 '''
 cd ~
-curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.19.1 TARGET_ARCH=x86_64 sh -
-sudo ln -s $PWD/istio-1.19.1/bin/istioctl /usr/local/bin/istioctl
-istioctl install --set profile=demo -y
-kubectl apply -f ./istio-1.19.1/samples/addons
+curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.24.1 TARGET_ARCH=x86_64 sh -
+sudo ln -s $PWD/istio-1.24.1/bin/istioctl /usr/local/bin/istioctl
+istioctl install
 '''
 
 ### Kialiインストール
 
 '''
-
-kubectl rollout status deployment/kiali -n istio-system
+cd ~
+kubectl apply -f $PWD/istio-1.24.1/samples/addons
+kubectl rollout status dekubec  ployment/kiali -n istio-system
 '''
 
+### Envoy Sidecarプロキシの有効化
+
+```
+kubectl label namespace <Namespace> istio-injection=enabled
 ```

@@ -1,3 +1,4 @@
 *.key
 *.crt
 k8s-setup/*-cert-secret.yaml
+istio-*
